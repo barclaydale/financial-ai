@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 255, 255, 255;
+  --background-end-rgb: 255, 255, 255;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+main {
+  justify-content: center;
+  justify-items: center;
+  font-size: large;
+}
+
+input,
+button {
+  margin: 4px;
+  border-radius: 4px;
+  border: solid gray 1px;
+  font-size: large;
+}
+
+.check {
+  border: solid red 1px;
+}
+
+.riskTable {
+  margin-top: 1rem;
+  width: 20vw;
+}
+
+.ticker {
+  width: 60vw;
+}
+
+thead tr th {
+  border-bottom: 2px solid #888888;
+}
+
+.historical tr:nth-child(odd) {
+  background-color: #ffffff; /* white */
+}
+
+.historical tr:nth-child(even) {
+  background-color: #f2f2f2; /* light gray */
+}
