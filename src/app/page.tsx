@@ -88,14 +88,12 @@ export default function Home() {
     tickerData: TickerData[],
     marketData: TickerData[]
   ) => {
-    console.log(tickerData);
     const dailyRiskFreeRate = (1 + riskFreeRate / 100) ** (1 / 252) - 1;
     const returns: number[] = [];
     const marketReturns: number[] = [];
     const drawdowns: number[] = [];
     let peak = 0;
     const alpha = 0.95;
-    console.log(tickerData[tickerData.length - 1]);
 
     tickerData.forEach((day, i) => {
       if (i === 0) {
@@ -148,12 +146,16 @@ export default function Home() {
       ) /
       (returns.length - 1);
     const sortedReturns = returns.sort((a, b) => a - b);
+    console.log(sortedReturns);
     const index = Math.floor((1 - alpha) * sortedReturns.length);
-    const VaR = -sortedReturns[index] * +tickerData[tickerData.length - 1]; // need to multiply by the current price of the stock
+    const VaR =
+      -sortedReturns[index] * +tickerData[tickerData.length - 1]['4. close'];
     const conditionalLoss = sortedReturns.slice(0, index);
+    console.log(conditionalLoss);
     const averageConditionalLoss =
       (conditionalLoss.reduce((a, b) => a + b, 0) / conditionalLoss.length) *
       100;
+    console.log(averageConditionalLoss);
 
     const risk = {
       dailyVolatility: parseFloat(stdDev.toFixed(2)),
@@ -189,7 +191,7 @@ export default function Home() {
       {riskMetrics && (
         <div>
           <table className="riskTable">
-            <thead>
+            <thead className="sticky-header">
               <tr>
                 <th colSpan={2}>Risk Metrics</th>
               </tr>
@@ -229,7 +231,7 @@ export default function Home() {
               </tr>
               <tr>
                 <td>VaR (95%)</td>
-                <td>{riskMetrics?.var || 'N/A'}</td>
+                <td>{'$' + riskMetrics?.var || 'N/A'}</td>
               </tr>
               <tr>
                 <td>Conditional VaR</td>
@@ -258,7 +260,7 @@ export default function Home() {
       {riskMetrics && (
         <div>
           <table className="ticker">
-            <thead>
+            <thead className="sticky-header">
               <tr>
                 <th>Date</th>
                 <th>Open</th>

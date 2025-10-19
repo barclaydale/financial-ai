@@ -20,7 +20,7 @@
 main {
   justify-content: center;
   justify-items: center;
-  font-size: large;
+  font-size: x-large;
 }
 
 input,
@@ -28,7 +28,7 @@ button {
   margin: 4px;
   border-radius: 4px;
   border: solid gray 1px;
-  font-size: large;
+  font-size: x-large;
 }
 
 .check {
@@ -48,11 +48,11 @@ thead tr th {
   border-bottom: 2px solid #888888;
 }
 
-.historical tr:nth-child(odd) {
+tbody tr:nth-child(odd) {
   background-color: #ffffff;
 }
 
-.historical tr:nth-child(even) {
+tbody tr:nth-child(even) {
   background-color: #f2f2f2;
 }
 
@@ -66,7 +66,6 @@ td {
   align-items: center;
   height: 98vh;
   margin: 0 auto;
-    border: solid red 1px;
 }
 
 .top {
@@ -74,4 +73,11 @@ td {
   justify-content: center;
   align-items: flex-start;
   height: auto;
+}
+
+.sticky-header {
+  background-color: white;
+  position: sticky;
+  top: 0px;
+  z-index: 5;
 }
