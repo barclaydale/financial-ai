@@ -88,6 +88,7 @@ export default function Home() {
     tickerData: TickerData[],
     marketData: TickerData[]
   ) => {
+    console.log(tickerData);
     const dailyRiskFreeRate = (1 + riskFreeRate / 100) ** (1 / 252) - 1;
     const returns: number[] = [];
     const marketReturns: number[] = [];
@@ -99,12 +100,12 @@ export default function Home() {
     tickerData.forEach((day, i) => {
       if (i === 0) {
         peak = +day['4. close'];
+      } else {
+        const r =
+          (+day['4. close'] - +tickerData[i - 1]['4. close']) /
+          +tickerData[i - 1]['4. close'];
+        returns.push(r);
       }
-      const r =
-        (+day['4. close'] - +tickerData[i - 1]['4. close']) /
-        +tickerData[i - 1]['4. close'];
-      returns.push(r);
-
       const yesterdayClose = +day['4. close'];
 
       if (yesterdayClose > peak) {
@@ -117,10 +118,14 @@ export default function Home() {
     });
 
     marketData.forEach((day, i) => {
-      const r =
-        (+day['4. close'] - +marketData[i - 1]['4. close']) /
-        +marketData[i - 1]['4. close'];
-      marketReturns.push(r);
+      if (i === 0) {
+        return;
+      } else {
+        const r =
+          (+day['4. close'] - +marketData[i - 1]['4. close']) /
+          +marketData[i - 1]['4. close'];
+        marketReturns.push(r);
+      }
     });
 
     const average = returns.reduce((a, b) => a + b, 0) / returns.length;
@@ -173,7 +178,7 @@ export default function Home() {
 
   return (
     <main>
-      <section>
+      <section className={riskMetrics ? 'top' : 'centered'}>
         <input
           value={ticker}
           onChange={(e) => setTicker(e.target.value)}
@@ -181,76 +186,76 @@ export default function Home() {
         ></input>
         <button onClick={handleTickerSearch}>Search</button>
       </section>
-      {/* {riskMetrics && ( */}
-      <div>
-        <table className="riskTable">
-          <thead>
-            <tr>
-              <th colSpan={2}>Risk Metrics</th>
-            </tr>
-            <tr>
-              <th>Ticker Symbol</th>
-              <th>{ticker}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Daily Volatility</td>
-              <td>{riskMetrics?.dailyVolatility + '%' || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td>Annual Volatility</td>
-              <td>{riskMetrics?.annualVolatility + '%' || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td>Yesterday Drawdown</td>
-              <td>{riskMetrics?.yesterdayDrawdown + '%' || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td>Max Drawdown</td>
-              <td>{riskMetrics?.maxDrawdown + '%' || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td>Daily Sharpe Ratio</td>
-              <td>{riskMetrics?.dailySharpe || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td>Annual Sharpe Ratio</td>
-              <td>{riskMetrics?.annualSharpe || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td>Beta</td>
-              <td>{riskMetrics?.beta || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td>VaR (95%)</td>
-              <td>{riskMetrics?.var || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td>Conditional VaR</td>
-              <td>{riskMetrics?.var + '%' || 'N/A'}</td>
-            </tr>
-            <tr>
-              <td>Correlation</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>Covariance</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>Sortino Ratio</td>
-              <td></td>
-            </tr>
-            <tr>
-              <td>Turnover Ratio</td>
-              <td></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      {/* )} */}
-      {tickerData && (
+      {riskMetrics && (
+        <div>
+          <table className="riskTable">
+            <thead>
+              <tr>
+                <th colSpan={2}>Risk Metrics</th>
+              </tr>
+              <tr>
+                <th>Ticker Symbol</th>
+                <th>{ticker}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Daily Volatility</td>
+                <td>{riskMetrics?.dailyVolatility + '%' || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>Annual Volatility</td>
+                <td>{riskMetrics?.annualVolatility + '%' || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>Yesterday Drawdown</td>
+                <td>{riskMetrics?.yesterdayDrawdown + '%' || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>Max Drawdown</td>
+                <td>{riskMetrics?.maxDrawdown + '%' || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>Daily Sharpe Ratio</td>
+                <td>{riskMetrics?.dailySharpe || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>Annual Sharpe Ratio</td>
+                <td>{riskMetrics?.annualSharpe || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>Beta</td>
+                <td>{riskMetrics?.beta || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>VaR (95%)</td>
+                <td>{riskMetrics?.var || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>Conditional VaR</td>
+                <td>{riskMetrics?.var + '%' || 'N/A'}</td>
+              </tr>
+              <tr>
+                <td>Correlation</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Covariance</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Sortino Ratio</td>
+                <td></td>
+              </tr>
+              <tr>
+                <td>Turnover Ratio</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+      {riskMetrics && (
         <div>
           <table className="ticker">
             <thead>
@@ -264,14 +269,14 @@ export default function Home() {
               </tr>
             </thead>
             <tbody className="historical">
-              {Object.entries(tickerData).map(([date, values], index) => (
+              {tickerData.map((d, index) => (
                 <tr key={index}>
-                  <td>{date}</td>
-                  <td>{(+values['1. open']).toFixed(2)}</td>
-                  <td>{(+values['2. high']).toFixed(2)}</td>
-                  <td>{(+values['3. low']).toFixed(2)}</td>
-                  <td>{(+values['4. close']).toFixed(2)}</td>
-                  <td>{(+values['5. volume']).toFixed(2)}</td>
+                  <td>{d.date}</td>
+                  <td>{(+d['1. open']).toFixed(2)}</td>
+                  <td>{(+d['2. high']).toFixed(2)}</td>
+                  <td>{(+d['3. low']).toFixed(2)}</td>
+                  <td>{(+d['4. close']).toFixed(2)}</td>
+                  <td>{(+d['5. volume']).toFixed(2)}</td>
                 </tr>
               ))}
             </tbody>

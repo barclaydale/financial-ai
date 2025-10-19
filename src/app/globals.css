@@ -37,7 +37,7 @@ button {
 
 .riskTable {
   margin-top: 1rem;
-  width: 20vw;
+  width: 30vw;
 }
 
 .ticker {
@@ -49,9 +49,29 @@ thead tr th {
 }
 
 .historical tr:nth-child(odd) {
-  background-color: #ffffff; /* white */
+  background-color: #ffffff;
 }
 
 .historical tr:nth-child(even) {
-  background-color: #f2f2f2; /* light gray */
+  background-color: #f2f2f2;
+}
+
+td {
+  text-align: center;
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 98vh;
+  margin: 0 auto;
+    border: solid red 1px;
+}
+
+.top {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  height: auto;
 }
