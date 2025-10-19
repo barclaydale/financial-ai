@@ -40,10 +40,18 @@ export default function Home() {
     const tickerResponse = await axios.get(tickerUrl);
     const tickerData: TickerData[] = tickerResponse.data['Time Series (Daily)'];
     const oneYearTickerEntries = Object.entries(tickerData).slice(0, 252);
-    const oneYearTickerArray = oneYearTickerEntries.map(([date, data]) => ({
-      date,
-      ...data,
-    }));
+    const oneYearTickerArray: TickerData[] = oneYearTickerEntries.map(
+      ([date, data]) => {
+        return {
+          '1. open': data['1. open'],
+          '2. high': data['2. high'],
+          '3. low': data['3. low'],
+          '4. close': data['4. close'],
+          '5. volume': data['5. volume'],
+          date, // your date from the key
+        };
+      }
+    );
     setTickerData(oneYearTickerArray);
 
     // if (marketData.length === 0) {
@@ -51,10 +59,18 @@ export default function Home() {
     const marketResponse = await axios.get(marketUrl);
     const marketData: TickerData[] = marketResponse.data['Time Series (Daily)'];
     const oneYearMarketEntries = Object.entries(marketData).slice(0, 252);
-    const oneYearMarketArray = oneYearMarketEntries.map(([date, data]) => ({
-      date,
-      ...data,
-    }));
+    const oneYearMarketArray: TickerData[] = oneYearMarketEntries.map(
+      ([date, data]) => {
+        return {
+          '1. open': data['1. open'],
+          '2. high': data['2. high'],
+          '3. low': data['3. low'],
+          '4. close': data['4. close'],
+          '5. volume': data['5. volume'],
+          date, // your date from the key
+        };
+      }
+    );
     setMarketData(oneYearMarketArray);
     // }
 
