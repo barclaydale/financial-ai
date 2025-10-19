@@ -84,52 +84,44 @@ export default function Home() {
     // console.log(response);
   };
 
-  const getRiskMetrics = (tickerData, marketData) => {
+  const getRiskMetrics = (
+    tickerData: TickerData[],
+    marketData: TickerData[]
+  ) => {
     const dailyRiskFreeRate = (1 + riskFreeRate / 100) ** (1 / 252) - 1;
     const returns: number[] = [];
     const marketReturns: number[] = [];
-    const drawdowns = [];
+    const drawdowns: number[] = [];
     let peak = 0;
-    let lastKey = '';
     const alpha = 0.95;
     console.log(tickerData[tickerData.length - 1]);
 
-    for (const key in tickerData) {
-      if (lastKey === '') {
-        lastKey = key;
-        peak = tickerData[key]['4. close'];
-      } else {
-        const r =
-          (+tickerData[key]['4. close'] - +tickerData[lastKey]['4. close']) /
-          +tickerData[lastKey]['4. close'];
-        returns.push(r);
-
-        const yesterdayClose = +tickerData[key]['4. close'];
-
-        if (yesterdayClose > peak) {
-          peak = yesterdayClose;
-          drawdowns.push(0);
-        } else {
-          const d = (+tickerData[key]['4. close'] - peak) / peak;
-          drawdowns.push(d);
-        }
+    tickerData.forEach((day, i) => {
+      if (i === 0) {
+        peak = +day['4. close'];
       }
-      lastKey = key;
-    }
+      const r =
+        (+day['4. close'] - +tickerData[i - 1]['4. close']) /
+        +tickerData[i - 1]['4. close'];
+      returns.push(r);
 
-    lastKey = '';
+      const yesterdayClose = +day['4. close'];
 
-    for (const key in marketData) {
-      if (lastKey === '') {
-        lastKey = key;
+      if (yesterdayClose > peak) {
+        peak = yesterdayClose;
+        drawdowns.push(0);
       } else {
-        const r =
-          (+marketData[key]['4. close'] - +marketData[lastKey]['4. close']) /
-          +marketData[lastKey]['4. close'];
-        marketReturns.push(r);
+        const d = (+day['4. close'] - peak) / peak;
+        drawdowns.push(d);
       }
-      lastKey = key;
-    }
+    });
+
+    marketData.forEach((day, i) => {
+      const r =
+        (+day['4. close'] - +marketData[i - 1]['4. close']) /
+        +marketData[i - 1]['4. close'];
+      marketReturns.push(r);
+    });
 
     const average = returns.reduce((a, b) => a + b, 0) / returns.length;
     const marketAverage =
@@ -152,7 +144,7 @@ export default function Home() {
       (returns.length - 1);
     const sortedReturns = returns.sort((a, b) => a - b);
     const index = Math.floor((1 - alpha) * sortedReturns.length);
-    const VaR = -sortedReturns[index] * tickerData[tickerData.length - 1]; // need to multiply by the current price of the stock
+    const VaR = -sortedReturns[index] * +tickerData[tickerData.length - 1]; // need to multiply by the current price of the stock
     const conditionalLoss = sortedReturns.slice(0, index);
     const averageConditionalLoss =
       (conditionalLoss.reduce((a, b) => a + b, 0) / conditionalLoss.length) *
