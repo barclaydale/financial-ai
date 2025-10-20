@@ -163,7 +163,7 @@ export default function Home() {
       yesterdayDrawdown: parseFloat(
         (drawdowns[drawdowns.length - 1] * 100).toFixed(1)
       ),
-      maxDrawdown: +Math.min(...drawdowns).toFixed(1),
+      maxDrawdown: parseFloat((+Math.min(...drawdowns) * 100).toFixed(1)),
       dailySharpe: parseFloat(
         ((average - dailyRiskFreeRate) / stdDev).toFixed(4)
       ),
@@ -193,29 +193,78 @@ export default function Home() {
           <table className="riskTable">
             <thead className="sticky-header">
               <tr>
-                <th colSpan={2}>Risk Metrics</th>
+                <th colSpan={3}>Risk Metrics</th>
               </tr>
               <tr>
                 <th>Ticker Symbol</th>
                 <th>{ticker}</th>
+                <th>Risk</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Daily Volatility</td>
                 <td>{riskMetrics?.dailyVolatility + '%' || 'N/A'}</td>
+                <td>
+                  {riskMetrics?.dailyVolatility < 0.3
+                    ? 'Very Low Risk'
+                    : riskMetrics?.dailyVolatility < 1
+                    ? 'Low Risk'
+                    : riskMetrics?.dailyVolatility < 2
+                    ? 'Moderate Risk'
+                    : riskMetrics?.dailyVolatility < 4
+                    ? 'High Risk'
+                    : 'Very High Risk'}
+                </td>
               </tr>
               <tr>
                 <td>Annual Volatility</td>
                 <td>{riskMetrics?.annualVolatility + '%' || 'N/A'}</td>
+                <td>
+                  {riskMetrics?.annualVolatility < 5
+                    ? 'Very Low Risk'
+                    : riskMetrics?.annualVolatility < 15
+                    ? 'Low Risk'
+                    : riskMetrics?.annualVolatility < 25
+                    ? 'Moderate Risk'
+                    : riskMetrics?.annualVolatility < 40
+                    ? 'High Risk'
+                    : 'Very High Risk'}
+                </td>
               </tr>
               <tr>
                 <td>Yesterday Drawdown</td>
                 <td>{riskMetrics?.yesterdayDrawdown + '%' || 'N/A'}</td>
+                <td>
+                  {riskMetrics?.yesterdayDrawdown > -5
+                    ? 'Stable'
+                    : riskMetrics?.yesterdayDrawdown > -10
+                    ? 'Mild Correction'
+                    : riskMetrics?.yesterdayDrawdown > -20
+                    ? 'Normal Pullback'
+                    : riskMetrics?.yesterdayDrawdown > -40
+                    ? 'High Volatility'
+                    : riskMetrics?.yesterdayDrawdown > -60
+                    ? 'Severe Bull Market'
+                    : 'Catastrophic'}
+                </td>
               </tr>
               <tr>
                 <td>Max Drawdown</td>
                 <td>{riskMetrics?.maxDrawdown + '%' || 'N/A'}</td>
+                <td>
+                  {riskMetrics?.maxDrawdown > -5
+                    ? 'Stable'
+                    : riskMetrics?.maxDrawdown > -10
+                    ? 'Mild Correction'
+                    : riskMetrics?.maxDrawdown > -20
+                    ? 'Normal Pullback'
+                    : riskMetrics?.maxDrawdown > -40
+                    ? 'High Volatility'
+                    : riskMetrics?.maxDrawdown > -60
+                    ? 'Severe Bull Market'
+                    : 'Catastrophic'}
+                </td>
               </tr>
               <tr>
                 <td>Daily Sharpe Ratio</td>
@@ -230,12 +279,12 @@ export default function Home() {
                 <td>{riskMetrics?.beta || 'N/A'}</td>
               </tr>
               <tr>
-                <td>VaR (95%)</td>
+                <td>VaR per Share (95%)</td>
                 <td>{'$' + riskMetrics?.var || 'N/A'}</td>
               </tr>
               <tr>
                 <td>Conditional VaR</td>
-                <td>{riskMetrics?.var + '%' || 'N/A'}</td>
+                <td>{riskMetrics?.cvar + '%' || 'N/A'}</td>
               </tr>
               <tr>
                 <td>Correlation</td>
