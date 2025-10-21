@@ -1,7 +1,12 @@
 'use client';
 import { useState } from 'react';
 import axios from 'axios';
+import Link from 'next/link';
 
+interface NewsData {
+  title: string;
+  url: string;
+}
 interface TickerData {
   date: string;
   '1. open': string;
@@ -29,17 +34,35 @@ interface RiskMetrics {
 
 const riskFreeRate = 3.9;
 const ALPHA_API = 'IFE2GI7MZGLWK4DK';
+const NEWS_API = 'e7c3b74f47454fecbf5ff56606bd920e';
 // const FRED_API = 'd0a1c8b03b5ee3e9fe43a673e284f9af';
 // const POLYGON_API = 'I7ce2x6ny4Xw4u7AkV47xyLqjcKZfvdz';
-// const NEWS_API = 'e7c3b74f47454fecbf5ff56606bd920e';
 
 export default function Home() {
   const [ticker, setTicker] = useState('');
   const [tickerData, setTickerData] = useState<TickerData[]>([]);
   const [marketData, setMarketData] = useState<TickerData[]>([]);
   const [riskMetrics, setRiskMetrics] = useState<RiskMetrics>();
+  const [news, setNews] = useState<NewsData[]>([]);
+
+  const fetchNews = async () => {
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split('T')[0];
+    const url = `https://newsapi.org/v2/everything?q=(stock OR market) AND ${ticker}&from=${yesterday}&sortBy=publishedAt&language=en&apiKey=${NEWS_API}`;
+    let response = await axios.get(url);
+    if (response.data.totalResults === 0) {
+      const lastFriday = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split('T')[0];
+      const url = `https://newsapi.org/v2/everything?q=(stock OR market) AND ${ticker}&from=${lastFriday}&sortBy=publishedAt&language=en&apiKey=${NEWS_API}`;
+      response = await axios.get(url);
+    }
+    setNews(response.data.articles);
+  };
 
   const handleTickerSearch = async () => {
+    fetchNews();
     const tickerUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&outputsize=full&symbol=${ticker}&apikey=${ALPHA_API}`;
     const tickerResponse = await axios.get(tickerUrl);
     const tickerData: TickerData[] = tickerResponse.data['Time Series (Daily)'];
@@ -194,8 +217,8 @@ export default function Home() {
       ),
     };
 
-    setRiskMetrics(risk);
     console.log(risk);
+    setRiskMetrics(risk);
   };
 
   return (
@@ -208,6 +231,7 @@ export default function Home() {
         ></input>
         <button onClick={handleTickerSearch}>Search</button>
       </section>
+
       {riskMetrics && (
         <div>
           <table className="riskTable">
@@ -539,11 +563,27 @@ export default function Home() {
           </table>
         </div>
       )}
+      {news && (
+        <table>
+          <thead>
+            <tr>
+              <th>Title</th>
+            </tr>
+          </thead>
+          <tbody>
+            {news.map((article, i: number) => (
+              <tr key={i}>
+                <td>
+                  <Link href={article.url}>{article.title}</Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </main>
   );
 }
-
-// useEffect(() => {
 // async function fetchAllTickers() {
 //   const url = `https://api.polygon.io/v3/reference/tickers?market=stocks&active=true&order=asc&limit=1000&sort=ticker&exchange=XNYS&apiKey=${POLYGON_API}`;
 //   const response = await axios.get(url);
@@ -551,18 +591,3 @@ export default function Home() {
 //   setAllTickers(response.data.results);
 // }
 // fetchAllTickers();
-//   async function fetchNews() {
-//     const yesterday = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
-//       .toISOString()
-//       .split('T')[0];
-//     const searchTerm = encodeURI('Stock Market');
-//     const url = `https://newsapi.org/v2/everything?q=${searchTerm}&from=${yesterday}&sortBy=publishedAt&language=en&apiKey=${NEWS_API}`;
-//     const url = `https://serpapi.com/search.json?engine=google_finance&q=LAC`;
-//     const response = await axios.get(url);
-//     console.log(response.data);
-//   }
-
-//   if (allTickers.length> 0) {
-//     const news = fetchNews();
-//   }
-// }, [allTickers]);
