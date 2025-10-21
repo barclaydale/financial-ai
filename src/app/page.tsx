@@ -226,7 +226,7 @@ export default function Home() {
       <section className={riskMetrics ? 'top' : 'centered'}>
         <input
           value={ticker}
-          onChange={(e) => setTicker(e.target.value)}
+          onChange={(e) => setTicker(e.target.value.toUpperCase())}
           placeholder="Search for Ticker"
         ></input>
         <button onClick={handleTickerSearch}>Search</button>
@@ -274,9 +274,9 @@ export default function Home() {
                 <td>{riskMetrics?.annualVolatility + '%' || 'N/A'}</td>
                 <td
                   className={
-                    riskMetrics?.annualVolatility < 1
+                    riskMetrics?.annualVolatility < 15
                       ? 'low'
-                      : riskMetrics?.annualVolatility > 2
+                      : riskMetrics?.annualVolatility > 25
                       ? 'high'
                       : ''
                   }
@@ -348,9 +348,9 @@ export default function Home() {
                 <td
                   className={
                     riskMetrics?.dailySharpe < 1
-                      ? 'low'
-                      : riskMetrics?.dailySharpe > 2
                       ? 'high'
+                      : riskMetrics?.dailySharpe > 2
+                      ? 'low'
                       : ''
                   }
                 >
@@ -371,9 +371,9 @@ export default function Home() {
                 <td
                   className={
                     riskMetrics?.annualSharpe < 1
-                      ? 'low'
-                      : riskMetrics?.annualSharpe > 2
                       ? 'high'
+                      : riskMetrics?.annualSharpe > 2
+                      ? 'low'
                       : ''
                   }
                 >
@@ -404,7 +404,7 @@ export default function Home() {
                     ? 'Inverse Risk'
                     : riskMetrics?.beta < 0.5
                     ? 'Low Risk'
-                    : riskMetrics?.beta < 1
+                    : riskMetrics?.beta <= 1
                     ? 'Moderate Risk'
                     : riskMetrics?.beta < 1.5
                     ? 'High Risk'
@@ -467,9 +467,9 @@ export default function Home() {
                 <td>{riskMetrics?.correlation || 'N/A'}</td>
                 <td
                   className={
-                    riskMetrics?.correlation < 0
+                    riskMetrics?.correlation < -0.1
                       ? 'high'
-                      : riskMetrics?.correlation > 0
+                      : riskMetrics?.correlation > 0.1
                       ? 'low'
                       : ''
                   }
