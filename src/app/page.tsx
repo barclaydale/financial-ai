@@ -21,6 +21,10 @@ interface RiskMetrics {
   beta: number;
   var: number;
   cvar: number;
+  correlation: number;
+  covariance: number;
+  dailySortino: number;
+  annualSortino: number;
 }
 
 const riskFreeRate = 3.9;
@@ -126,12 +130,16 @@ export default function Home() {
       }
     });
 
+    const negativeReturns = returns.filter((r) => r < 0);
     const average = returns.reduce((a, b) => a + b, 0) / returns.length;
     const marketAverage =
       marketReturns.reduce((a, b) => a + b, 0) / marketReturns.length;
     const variance =
       returns.reduce((sum, r) => sum + Math.pow(r - average, 2), 0) /
       (returns.length - 1);
+    const negativeVariance =
+      negativeReturns.reduce((sum, r) => sum + Math.pow(r, 2), 0) /
+      returns.length;
     const marketVariance =
       marketReturns.reduce(
         (sum, r) => sum + Math.pow(r - marketAverage, 2),
@@ -139,6 +147,8 @@ export default function Home() {
       ) /
       (marketReturns.length - 1);
     const stdDev = Math.sqrt(variance) * 100;
+    const negativeStdDev = Math.sqrt(negativeVariance) * 100;
+    const marketStdDev = Math.sqrt(marketVariance) * 100;
     const covariance =
       returns.reduce(
         (sum, x, i) => sum + (x - average) * (marketReturns[i] - marketAverage),
@@ -146,16 +156,12 @@ export default function Home() {
       ) /
       (returns.length - 1);
     const sortedReturns = returns.sort((a, b) => a - b);
-    console.log(sortedReturns);
     const index = Math.floor((1 - alpha) * sortedReturns.length);
-    const VaR =
-      -sortedReturns[index] * +tickerData[tickerData.length - 1]['4. close'];
+    const VaR = -sortedReturns[index] * 100;
     const conditionalLoss = sortedReturns.slice(0, index);
-    console.log(conditionalLoss);
     const averageConditionalLoss =
-      (conditionalLoss.reduce((a, b) => a + b, 0) / conditionalLoss.length) *
+      -(conditionalLoss.reduce((a, b) => a + b, 0) / conditionalLoss.length) *
       100;
-    console.log(averageConditionalLoss);
 
     const risk = {
       dailyVolatility: parseFloat(stdDev.toFixed(2)),
@@ -173,9 +179,23 @@ export default function Home() {
       beta: parseFloat((covariance / marketVariance).toFixed(4)),
       var: parseFloat(VaR.toFixed(2)),
       cvar: parseFloat(averageConditionalLoss.toFixed(2)),
+      correlation: parseFloat(
+        (+covariance / (+stdDev / (100 * +marketStdDev))).toFixed(4)
+      ),
+      covariance: parseFloat(covariance.toFixed(4)),
+      dailySortino: parseFloat(
+        ((average - dailyRiskFreeRate) / negativeStdDev).toFixed(4)
+      ),
+      annualSortino: parseFloat(
+        (
+          ((average - dailyRiskFreeRate) / negativeStdDev) *
+          Math.sqrt(252)
+        ).toFixed(4)
+      ),
     };
 
     setRiskMetrics(risk);
+    console.log(risk);
   };
 
   return (
@@ -198,14 +218,22 @@ export default function Home() {
               <tr>
                 <th>Ticker Symbol</th>
                 <th>{ticker}</th>
-                <th>Risk</th>
+                <th>Meaning</th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Daily Volatility</td>
                 <td>{riskMetrics?.dailyVolatility + '%' || 'N/A'}</td>
-                <td>
+                <td
+                  className={
+                    riskMetrics?.dailyVolatility < 1
+                      ? 'low'
+                      : riskMetrics?.dailyVolatility > 2
+                      ? 'high'
+                      : ''
+                  }
+                >
                   {riskMetrics?.dailyVolatility < 0.3
                     ? 'Very Low Risk'
                     : riskMetrics?.dailyVolatility < 1
@@ -220,7 +248,15 @@ export default function Home() {
               <tr>
                 <td>Annual Volatility</td>
                 <td>{riskMetrics?.annualVolatility + '%' || 'N/A'}</td>
-                <td>
+                <td
+                  className={
+                    riskMetrics?.annualVolatility < 1
+                      ? 'low'
+                      : riskMetrics?.annualVolatility > 2
+                      ? 'high'
+                      : ''
+                  }
+                >
                   {riskMetrics?.annualVolatility < 5
                     ? 'Very Low Risk'
                     : riskMetrics?.annualVolatility < 15
@@ -235,7 +271,15 @@ export default function Home() {
               <tr>
                 <td>Yesterday Drawdown</td>
                 <td>{riskMetrics?.yesterdayDrawdown + '%' || 'N/A'}</td>
-                <td>
+                <td
+                  className={
+                    riskMetrics?.yesterdayDrawdown > -10
+                      ? 'low'
+                      : riskMetrics?.yesterdayDrawdown < -20
+                      ? 'high'
+                      : ''
+                  }
+                >
                   {riskMetrics?.yesterdayDrawdown > -5
                     ? 'Stable'
                     : riskMetrics?.yesterdayDrawdown > -10
@@ -252,7 +296,15 @@ export default function Home() {
               <tr>
                 <td>Max Drawdown</td>
                 <td>{riskMetrics?.maxDrawdown + '%' || 'N/A'}</td>
-                <td>
+                <td
+                  className={
+                    riskMetrics?.maxDrawdown > -10
+                      ? 'low'
+                      : riskMetrics?.maxDrawdown < -20
+                      ? 'high'
+                      : ''
+                  }
+                >
                   {riskMetrics?.maxDrawdown > -5
                     ? 'Stable'
                     : riskMetrics?.maxDrawdown > -10
@@ -269,38 +321,191 @@ export default function Home() {
               <tr>
                 <td>Daily Sharpe Ratio</td>
                 <td>{riskMetrics?.dailySharpe || 'N/A'}</td>
+                <td
+                  className={
+                    riskMetrics?.dailySharpe < 1
+                      ? 'low'
+                      : riskMetrics?.dailySharpe > 2
+                      ? 'high'
+                      : ''
+                  }
+                >
+                  {riskMetrics?.dailySharpe < 0
+                    ? 'Poor'
+                    : riskMetrics?.dailySharpe < 1
+                    ? 'Low'
+                    : riskMetrics?.dailySharpe < 2
+                    ? 'Good'
+                    : riskMetrics?.dailySharpe < 3
+                    ? 'Very Good'
+                    : 'Excellent'}
+                </td>
               </tr>
               <tr>
                 <td>Annual Sharpe Ratio</td>
                 <td>{riskMetrics?.annualSharpe || 'N/A'}</td>
+                <td
+                  className={
+                    riskMetrics?.annualSharpe < 1
+                      ? 'low'
+                      : riskMetrics?.annualSharpe > 2
+                      ? 'high'
+                      : ''
+                  }
+                >
+                  {riskMetrics?.annualSharpe < 0
+                    ? 'Poor'
+                    : riskMetrics?.annualSharpe < 1
+                    ? 'Low'
+                    : riskMetrics?.annualSharpe < 2
+                    ? 'Good'
+                    : riskMetrics?.annualSharpe < 3
+                    ? 'Very Good'
+                    : 'Excellent'}
+                </td>
               </tr>
               <tr>
                 <td>Beta</td>
                 <td>{riskMetrics?.beta || 'N/A'}</td>
+                <td
+                  className={
+                    riskMetrics?.beta < 0.5
+                      ? 'low'
+                      : riskMetrics?.beta > 1
+                      ? 'high'
+                      : ''
+                  }
+                >
+                  {riskMetrics?.beta < 0
+                    ? 'Inverse Risk'
+                    : riskMetrics?.beta < 0.5
+                    ? 'Low Risk'
+                    : riskMetrics?.beta < 1
+                    ? 'Moderate Risk'
+                    : riskMetrics?.beta < 1.5
+                    ? 'High Risk'
+                    : 'Very High Risk'}
+                </td>
               </tr>
               <tr>
-                <td>VaR per Share (95%)</td>
-                <td>{'$' + riskMetrics?.var || 'N/A'}</td>
+                <td>95% VaR (per Share)</td>
+                <td>
+                  {riskMetrics?.var +
+                    '% ($' +
+                    (
+                      (riskMetrics?.var *
+                        +tickerData[tickerData.length - 1]['4. close']) /
+                      100
+                    ).toFixed(2) +
+                    ')' || 'N/A'}
+                </td>
+                <td
+                  className={
+                    riskMetrics?.var < 1.5
+                      ? 'low'
+                      : riskMetrics?.var > 3
+                      ? 'high'
+                      : ''
+                  }
+                >
+                  {riskMetrics?.var < 1.5
+                    ? 'Low Risk'
+                    : riskMetrics?.var < 3
+                    ? 'Moderate Risk'
+                    : riskMetrics?.var < 6
+                    ? 'High Risk'
+                    : 'Very High Risk'}
+                </td>
               </tr>
               <tr>
                 <td>Conditional VaR</td>
                 <td>{riskMetrics?.cvar + '%' || 'N/A'}</td>
+                <td
+                  className={
+                    riskMetrics?.cvar < 1.5
+                      ? 'low'
+                      : riskMetrics?.cvar > 3
+                      ? 'high'
+                      : ''
+                  }
+                >
+                  {riskMetrics?.cvar < 1.5
+                    ? 'Low Risk'
+                    : riskMetrics?.cvar < 3
+                    ? 'Moderate Risk'
+                    : riskMetrics?.cvar < 5
+                    ? 'High Risk'
+                    : 'Very High Risk'}
+                </td>
               </tr>
               <tr>
                 <td>Correlation</td>
-                <td></td>
+                <td>{riskMetrics?.correlation || 'N/A'}</td>
+                <td
+                  className={
+                    riskMetrics?.correlation < 0
+                      ? 'high'
+                      : riskMetrics?.correlation > 0
+                      ? 'low'
+                      : ''
+                  }
+                >
+                  {riskMetrics?.correlation < -0.5
+                    ? 'Strong Inverse'
+                    : riskMetrics?.correlation < -0.1
+                    ? 'Weak Inverse'
+                    : riskMetrics?.correlation > 0.5
+                    ? 'Strong Direct'
+                    : riskMetrics?.correlation > 0.1
+                    ? 'Weak Direct'
+                    : 'No Correlation'}
+                </td>
               </tr>
               <tr>
-                <td>Covariance</td>
-                <td></td>
+                <td>Daily Sortino Ratio</td>
+                <td>{riskMetrics?.dailySortino || 'N/A'}</td>
+                <td
+                  className={
+                    riskMetrics?.dailySortino < 1
+                      ? 'high'
+                      : riskMetrics?.dailySortino > 2
+                      ? 'low'
+                      : ''
+                  }
+                >
+                  {riskMetrics?.dailySortino < 0
+                    ? 'Poor'
+                    : riskMetrics?.dailySortino < 1
+                    ? 'Low'
+                    : riskMetrics?.dailySortino < 2
+                    ? 'Good'
+                    : riskMetrics?.dailySortino < 3
+                    ? 'Very Good'
+                    : 'Excellent'}
+                </td>
               </tr>
               <tr>
-                <td>Sortino Ratio</td>
-                <td></td>
-              </tr>
-              <tr>
-                <td>Turnover Ratio</td>
-                <td></td>
+                <td>Annual Sortino Ratio</td>
+                <td>{riskMetrics?.annualSortino || 'N/A'}</td>
+                <td
+                  className={
+                    riskMetrics?.annualSortino < 1
+                      ? 'high'
+                      : riskMetrics?.annualSortino > 2
+                      ? 'low'
+                      : ''
+                  }
+                >
+                  {riskMetrics?.annualSortino < 0
+                    ? 'Poor'
+                    : riskMetrics?.annualSortino < 1
+                    ? 'Low'
+                    : riskMetrics?.annualSortino < 2
+                    ? 'Good'
+                    : riskMetrics?.annualSortino < 3
+                    ? 'Very Good'
+                    : 'Excellent'}
+                </td>
               </tr>
             </tbody>
           </table>

@@ -37,7 +37,7 @@ button {
 
 .riskTable {
   margin-top: 1rem;
-  width: 30vw;
+  width: 40vw;
 }
 
 .ticker {
@@ -80,4 +80,12 @@ td {
   position: sticky;
   top: 0px;
   z-index: 5;
+}
+
+.low {
+  color: green;
+}
+
+.high {
+  color: red;
 }
